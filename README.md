@@ -1,2 +1,2 @@
-# cd-lab-s7
+# cd-lab
 Lab for S7
