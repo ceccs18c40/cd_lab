@@ -215,11 +215,11 @@ void parse(char* str)
 
     int left = 0, right = 0; 
 
-    int len = strlen(str); 
+    int str_len = strlen(str); 
 
   
 
-    while (right <= len && left <= right) { 
+    while (right <= str_len && left <= right) { 
 
         if (isDelimiter(str[right]) == false) 
 
@@ -231,7 +231,7 @@ void parse(char* str)
 
             if (isOperator(str[right]) == true) 
 
-                printf("'%c' IS AN OPERATOR\n", str[right]); 
+                printf("It's is Operator: '%c'\n", str[right]); 
 
   
 
@@ -241,7 +241,7 @@ void parse(char* str)
 
         } else if (isDelimiter(str[right]) == true && left != right 
 
-                   || (right == len && left != right)) { 
+                   || (right == str_len && left != right)) { 
 
             char* subStr = subString(str, left, right - 1); 
 
@@ -249,19 +249,19 @@ void parse(char* str)
 
             if (isKeyword(subStr) == true) 
 
-                printf("'%s' IS A KEYWORD\n", subStr); 
+                printf("It's Keyword: '%s'\n", subStr); 
 
   
 
             else if (isInteger(subStr) == true) 
 
-                printf("'%s' IS AN INTEGER\n", subStr); 
+                printf("It's Integer: '%s'\n", subStr); 
 
   
 
             else if (isRealNumber(subStr) == true) 
 
-                printf("'%s' IS A REAL NUMBER\n", subStr); 
+                printf("It's Real Number: '%s'\n", subStr); 
 
   
 
@@ -269,7 +269,7 @@ void parse(char* str)
 
                      && isDelimiter(str[right - 1]) == false) 
 
-                printf("'%s' IS A VALID IDENTIFIER\n", subStr); 
+                printf("It's valid Identifier: '%s'\n", subStr); 
 
   
 
@@ -277,7 +277,7 @@ void parse(char* str)
 
                      && isDelimiter(str[right - 1]) == false) 
 
-                printf("'%s' IS NOT A VALID IDENTIFIER\n", subStr); 
+                printf("It's not valid Identifier: '%s'\n", subStr); 
 
             left = right; 
 
@@ -296,7 +296,7 @@ int main()
 
      // maximum legth of string is 100 here  
 
-    char str[100] = "int c = 8a * b ; "; 
+    char str[100] = "int a = 10; "; 
 
   
 
