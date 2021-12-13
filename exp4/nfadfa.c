@@ -1,325 +1,292 @@
-// C Program to illustrate how to convert e-nfa to DFA
+#include<stdio.h>
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#define MAX_LEN 100
-
-char NFA_FILE[MAX_LEN];
-char buffer[MAX_LEN];
-int zz = 0;
-
-// Structure to store DFA states and their
-// status ( i.e new entry or already present)
-struct DFA {
-char *states;
-int count;
-} dfa;
-
-int last_index = 0;
+int Fa[10][10][10],states[2][10],row=0,col=0,sr=0,sc=0,th=0,
+in,stat,new_state[10][10],max_inp=-1,no_stat;
 FILE *fp;
-int symbols;
 
-/* reset the hash map*/
-void reset(int ar[], int size) {
-int i;
+int search(int search_var)
+ {
 
-// reset all the values of
-// the mapping array to zero
-for (i = 0; i < size; i++) {
-	ar[i] = 0;
-}
-}
+   int i;
+   for(i=0;i<no_stat;i++)
+      if(search_var == states[1][i])
+      return 1;
+   return 0;
+ }
 
-// Check which States are present in the e-closure
 
-/* map the states of NFA to a hash set*/
-void check(int ar[], char S[]) {
-int i, j;
+int sort(int *arr,int count)
+ {
+   int temp,i,j;
+   for(i=0;i<count-1;i++)
+     {
+      for(j=i+1;j<count;j++)
+    {
+      if(arr[i]>=arr[j])
+        {
+          temp=arr[i];
+          arr[i]=arr[j];
+          arr[j]=temp;
+         }
+     }
+     }
+   return 0;
+ }
 
-// To parse the individual states of NFA
-int len = strlen(S);
-for (i = 0; i < len; i++) {
+int checkcon(int *arr,int *count)  //for doing this {4,1}={1,2,1}=={1,2}
+ {
+   int i,temp,j,k,c,t,m;
+   for(i=0;i<*count;i++)
+     {
+       if(arr[i]>row)
+      {
+         temp =arr[i];
+         c=0;
+         t=0;
+        while(new_state[arr[i]][t]!=-1)
+         {
+           t++;
+           c++;
+         }
+        //right shift from ith postion (c-2) th time
+        for(k=0;k<=c-2;k++)
+           {
+        for(j=9;j>=i+1+k;j--)
+         {
+          arr[j]=arr[j-1];
+         }
+           }
 
-	// Set hash map for the position
-	// of the states which is found
-	j = ((int)(S[i]) - 65);
-	ar[j]++;
-}
-}
+         t=0;
+         for(j=i;j<c;j++)
+        {
+           arr[j]=new_state[temp][t];
+           t++;
+         }
+       }
+     }
+   c=0;
+  for(i=0;arr[i]!=-1;i++)
+      c++;
+   *count=c;
+   return 0;
+ }
 
-// To find new Closure States
-void state(int ar[], int size, char S[]) {
-int j, k = 0;
+int remove_duplicate(int *arr,int *count)
+ {
+   int i,j=0;
+   for(i=1;i<*count;i++)
+     {
+      if(arr[i]!=arr[j])
+     {
+       j++;
+       arr[j]=arr[i];
+     }
+     }
+   *count=j+1;
+   return 0;
+ }
 
-// Combine multiple states of NFA
-// to create new states of DFA
-for (j = 0; j < size; j++) {
-	if (ar[j] != 0)
-	S[k++] = (char)(65 + j);
-}
-
-// mark the end of the state
-S[k] = '\0';
-}
-
-// To pick the next closure from closure set
-int closure(int ar[], int size) {
-int i;
-
-// check new closure is present or not
-for (i = 0; i < size; i++) {
-	if (ar[i] == 1)
-	return i;
-}
-return (100);
-}
-
-// Check new DFA states can be
-// entered in DFA table or not
-int indexing(struct DFA *dfa) {
-int i;
-
-for (i = 0; i < last_index; i++) {
-	if (dfa[i].count == 0)
-	return 1;
-}
-return -1;
-}
-
-/* To Display epsilon closure*/
-void Display_closure(int states, int closure_ar[],
-					char *closure_table[],
-					char *NFA_TABLE[][symbols + 1],
-					char *DFA_TABLE[][symbols]) {
-int i;
-for (i = 0; i < states; i++) {
-	reset(closure_ar, states);
-	closure_ar[i] = 2;
-
-	// to neglect blank entry
-	if (strcmp(&NFA_TABLE[i][symbols], "-") != 0) {
-
-	// copy the NFA transition state to buffer
-	strcpy(buffer, &NFA_TABLE[i][symbols]);
-	check(closure_ar, buffer);
-	int z = closure(closure_ar, states);
-
-	// till closure get completely saturated
-	while (z != 100)
-	{
-		if (strcmp(&NFA_TABLE[z][symbols], "-") != 0) {
-		strcpy(buffer, &NFA_TABLE[z][symbols]);
-
-		// call the check function
-		check(closure_ar, buffer);
-		}
-		closure_ar[z]++;
-		z = closure(closure_ar, states);
-	}
-	}
-
-	// print the e closure for every states of NFA
-	printf("\n e-Closure (%c) :\t", (char)(65 + i));
-
-	bzero((void *)buffer, MAX_LEN);
-	state(closure_ar, states, buffer);
-	strcpy(&closure_table[i], buffer);
-	printf("%s\n", &closure_table[i]);
-}
+int check(int i ,int j,int c,int *name)///for checking is this a new state?
+  {
+    int t,l,f;
+    for(l=0;l<=stat;l++)
+      {
+       t=0; f=0;
+       while(Fa[i][j][t]!=-1)
+     {
+        if(Fa[i][j][t]==new_state[l][t])
+          t++;
+        else
+          {
+        f=1;
+        break;
+         }
+     }
+      if((t==c)&&!f)
+    {
+     *name=l;
+     return 1;
+    }
+    }
+    return 0;
 }
 
-/* To check New States in DFA */
-int new_states(struct DFA *dfa, char S[]) {
+int trans(int i ,int j,int t,int c,int *count,int *arr)//transition o/p for particular i/p on states
+ {
+   int k=0,co,temp;
+   *count=0;
+   for(k=0;k<c;k++)
+     {
+       temp=Fa[i][j][k];
+       co=0;
+       while(Fa[temp][t][co]!=-1)
+      {
+        arr[*count]=Fa[temp][t][co++];
+        (*count)++;
+      }
+     }
+return 0;
+ }
 
-int i;
+int nfa2dfa(int start,int end)
+ {
+   int j,t,c,i,k,count,arr[10],name,l;
+   for(i=start;i<=end;i++)
+      {
+    for(j=0;j<=max_inp;j++)
+      {
+        c=0;t=0;
+        while(Fa[i][j][t]>=0)
+           {
+         t++;
+         c++;
+           }
+          if(c>1)
+        {
+         if(check(i,j,c,&name)==0)
+           {
+             for(k=0;k<c;k++)
+              {
+             new_state[stat][k]=Fa[i][j][k];
+             for(l=0;states[1][l]!=-1;l++)
+                if(new_state[stat][k] == states[1][l]&& !search(stat))
+                  states[1][no_stat++]=stat;
+              }
 
-// To check the current state is already
-// being used as a DFA state or not in
-// DFA transition table
-for (i = 0; i < last_index; i++) {
-	if (strcmp(&dfa[i].states, S) == 0)
-	return 0;
-}
+              for(t=0;t<=max_inp;t++)
+            {
+               count=0;
+               for(k=0;k<10;k++)
+                  arr[k]=-1;
+               trans(i,j,t,c,&count,arr);
 
-// push the new
-strcpy(&dfa[last_index++].states, S);
 
-// set the count for new states entered
-// to zero
-dfa[last_index - 1].count = 0;
-return 1;
-}
+               checkcon(arr,&count);
 
-// Transition function from NFA to DFA
-// (generally union of closure operation )
-void trans(char S[], int M, char *clsr_t[], int st,
-			char *NFT[][symbols + 1], char TB[]) {
-int len = strlen(S);
-int i, j, k, g;
-int arr[st];
-int sz;
-reset(arr, st);
-char temp[MAX_LEN], temp2[MAX_LEN];
-char *buff;
+               sort(arr,count);
+               remove_duplicate(arr,&count);
 
-// Transition function from NFA to DFA
-for (i = 0; i < len; i++) {
+               for(k=0;k<count;k++)
+                 Fa[stat][t][k]=arr[k];
+            }
+          Fa[i][j][0]=stat++;
+          for(t=1;t<c;t++)
+            Fa[i][j][t]=-1;
+         }
+           else
+         {
+           Fa[i][j][0]=name ;
+           for(t=1;t<c;t++)
+             Fa[i][j][t]=-1;
+         }
+          }
+       }
 
-	j = ((int)(S[i] - 65));
-	strcpy(temp, &NFT[j][M]);
+     }
+  return 0;
+ }
 
-	if (strcmp(temp, "-") != 0) {
-	sz = strlen(temp);
-	g = 0;
+int main()
+ {
 
-	while (g < sz) {
-		k = ((int)(temp[g] - 65));
-		strcpy(temp2, &clsr_t[k]);
-		check(arr, temp2);
-		g++;
-	}
-	}
-}
+     int i,j,k,flag=0,start,end;
+     char c,ch;
+     fp=fopen("input.txt","r+");
 
-bzero((void *)temp, MAX_LEN);
-state(arr, st, temp);
-if (temp[0] != '\0') {
-	strcpy(TB, temp);
-} else
-	strcpy(TB, "-");
-}
 
-/* Display DFA transition state table*/
-void Display_DFA(int last_index, struct DFA *dfa_states,
-				char *DFA_TABLE[][symbols]) {
-int i, j;
-printf("\n\n********************************************************\n\n");
-printf("\t\t DFA TRANSITION STATE TABLE \t\t \n\n");
-printf("\n STATES OF DFA :\t\t");
+     for(i=0;i<2;i++)
+       for(j=0;j<10;j++)
+     states[i][j]=-1;
 
-for (i = 1; i < last_index; i++)
-	printf("%s, ", &dfa_states[i].states);
-printf("\n");
-printf("\n GIVEN SYMBOLS FOR DFA: \t");
+    for(i=0;i<10;i++)
+       for(j=0;j<10;j++)
+     new_state[i][j]=-1;
 
-for (i = 0; i < symbols; i++)
-	printf("%d, ", i);
+     for(i=0;i<10;i++)
+       for(j=0;j<10;j++)
+      for(k=0;k<10;k++)
+          Fa[i][j][k]=-1;
+
+     while(fscanf(fp,"%d",&in)!=EOF)
+       {
+       fscanf(fp,"%c",&c);
+
+        if(flag)
+          {
+         states[sr][sc++]=in;
+         if(c=='\n')
+            {
+              sr++;
+              sc=0;
+            }
+          }
+        else if(c=='#')
+          {
+         flag=1;
+         Fa[row][col][th]=in;
+
+          }
+         else if(!flag)
+          {
+         Fa[row][col][th]=in;
+         if(c==',')
+           {
+             th++;
+           }
+         else if(c=='\n')
+           {
+             if(max_inp<col)
+               max_inp=col;
+              col=0;
+              row++;
+              th=0;
+          }
+        else if(c!=',')
+         {
+             col++;
+             th=0;
+          }
+          }
+
+      }
+   no_stat=0;
+   i=0;
+   while(states[1][i++]!=-1)
+      no_stat++;
+      stat=row+1;
+      start=0;end=row;
+      while(1)
+      {
+         nfa2dfa(start,end);
+         start=end+1;
+         end=row;
+         if(start>end)
+          break;
+      }
+
+     printf("\n\nDFA IS : \n\n\n");
+     for(i=0;i<=max_inp;i++)
+     printf("\t%d",i);
+     printf("\n");
+     printf("----------------------------\n");
+
+     for(i=0;i<stat;i++)
+       {
+     printf("%d-> |",i);
+       for(j=0;j<=max_inp;j++)
+      {
+        printf("%2d        ",Fa[i][j][0]);
+      }
+      printf("\n");
+       }
 printf("\n\n");
-printf("STATES\t");
+printf("Total Number Of State Is : %d \n\n",stat);
+printf("Final States Are : ");
+  for(i=0;states[1][i]!=-1;i++)
+     printf("%d ",states[1][i]);
 
-for (i = 0; i < symbols; i++)
-	printf("|%d\t", i);
-printf("\n");
-
-// display the DFA transition state table
-printf("--------+-----------------------\n");
-for (i = 0; i < zz; i++) {
-	printf("%s\t", &dfa_states[i + 1].states);
-	for (j = 0; j < symbols; j++) {
-	printf("|%s \t", &DFA_TABLE[i][j]);
-	}
-	printf("\n");
-}
-}
-
-// Driver Code
-int main() {
-int i, j, states;
-char T_buf[MAX_LEN];
-
-// creating an array dfa structures
-struct DFA *dfa_states = malloc(MAX_LEN * (sizeof(dfa)));
-states = 6, symbols = 2;
-
-printf("\n STATES OF NFA :\t\t");
-for (i = 0; i < states; i++)
-
-	printf("%c, ", (char)(65 + i));
-printf("\n");
-printf("\n GIVEN SYMBOLS FOR NFA: \t");
-
-for (i = 0; i < symbols; i++)
-
-	printf("%d, ", i);
-printf("eps");
 printf("\n\n");
-char *NFA_TABLE[states][symbols + 1];
-
-// Hard coded input for NFA table
-char *DFA_TABLE[MAX_LEN][symbols];
-strcpy(&NFA_TABLE[0][0], "FC");
-strcpy(&NFA_TABLE[0][1], "-");
-strcpy(&NFA_TABLE[0][2], "BF");
-strcpy(&NFA_TABLE[1][0], "-");
-strcpy(&NFA_TABLE[1][1], "C");
-strcpy(&NFA_TABLE[1][2], "-");
-strcpy(&NFA_TABLE[2][0], "-");
-strcpy(&NFA_TABLE[2][1], "-");
-strcpy(&NFA_TABLE[2][2], "D");
-strcpy(&NFA_TABLE[3][0], "E");
-strcpy(&NFA_TABLE[3][1], "A");
-strcpy(&NFA_TABLE[3][2], "-");
-strcpy(&NFA_TABLE[4][0], "A");
-strcpy(&NFA_TABLE[4][1], "-");
-strcpy(&NFA_TABLE[4][2], "BF");
-strcpy(&NFA_TABLE[5][0], "-");
-strcpy(&NFA_TABLE[5][1], "-");
-strcpy(&NFA_TABLE[5][2], "-");
-printf("\n NFA STATE TRANSITION TABLE \n\n\n");
-printf("STATES\t");
-
-for (i = 0; i < symbols; i++)
-	printf("|%d\t", i);
-printf("eps\n");
-
-// Displaying the matrix of NFA transition table
-printf("--------+------------------------------------\n");
-for (i = 0; i < states; i++) {
-	printf("%c\t", (char)(65 + i));
-
-	for (j = 0; j <= symbols; j++) {
-	printf("|%s \t", &NFA_TABLE[i][j]);
-	}
-	printf("\n");
-}
-int closure_ar[states];
-char *closure_table[states];
-
-Display_closure(states, closure_ar, closure_table, NFA_TABLE, DFA_TABLE);
-strcpy(&dfa_states[last_index++].states, "-");
-
-dfa_states[last_index - 1].count = 1;
-bzero((void *)buffer, MAX_LEN);
-
-strcpy(buffer, &closure_table[0]);
-strcpy(&dfa_states[last_index++].states, buffer);
-
-int Sm = 1, ind = 1;
-int start_index = 1;
-
-// Filling up the DFA table with transition values
-// Till new states can be entered in DFA table
-while (ind != -1) {
-	dfa_states[start_index].count = 1;
-	Sm = 0;
-	for (i = 0; i < symbols; i++) {
-
-	trans(buffer, i, closure_table, states, NFA_TABLE, T_buf);
-
-	// storing the new DFA state in buffer
-	strcpy(&DFA_TABLE[zz][i], T_buf);
-
-	// parameter to control new states
-	Sm = Sm + new_states(dfa_states, T_buf);
-	}
-	ind = indexing(dfa_states);
-	if (ind != -1)
-	strcpy(buffer, &dfa_states[++start_index].states);
-	zz++;
-}
-// display the DFA TABLE
-Display_DFA(last_index, dfa_states, DFA_TABLE);
-
+getc;
 return 0;
 }
