@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <curses.h>
+#include <stdlib.h>
 
 int Fa[10][10][10],states[2][10],curr,row=0,col=0,sr=0,sc=0,th=0,in;
 char *str;
@@ -87,14 +88,14 @@ int main()
           }
 
       }
-
+      str = (char*)malloc(100*sizeof(char));
       printf("\n\nEnter the string : \n");
       scanf("%s",str);
 
       if(nfa(str,states[0][0]))
-    printf("\nString Is Accepted");
+    printf("\nString Is Accepted \n");
        else
-    printf("\nString Not Accepted");
+    printf("\nString Not Accepted\n");
      getc;
 
      return 0;
